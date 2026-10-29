@@ -20,7 +20,8 @@ One line for each commit on `virtus` that is not in upstream:
    (the tree has no gitlink, and the `git://` URL does not work). The tasks that need the legislator data still
    clone it at run time (`congress/tasks/utils.py`, `require_congress_legislators_repo`).
 2. `Release workflow: wheel, sdist and SHA256SUMS for v*+virtus.* tags`: `.github/workflows/virtus-release.yml`, and
-   the version `0.0.1+virtus.1` in `setup.py`.
+   the version `0.0.1+virtus.1` in `setup.py`. The workflow pins the build backend (`setuptools==84.2.1`) with a
+   build constraint. The repo has no `pyproject.toml`, so `pip install .` works on the Pythons upstream supports.
 3. `VIRTUS.md`: this file.
 
 ## Python 3.13

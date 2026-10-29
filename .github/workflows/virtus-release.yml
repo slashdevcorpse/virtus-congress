@@ -28,7 +28,9 @@ jobs:
         run: |
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
           export SOURCE_DATE_EPOCH
-          uv build --python 3.13.15 --out-dir dist
+          # Pin the build backend here, not in pyproject.toml, so source installs on older Pythons still work.
+          echo 'setuptools==84.2.1' > "$RUNNER_TEMP/build-constraints.txt"
+          uv build --python 3.13.15 --build-constraint "$RUNNER_TEMP/build-constraints.txt" --out-dir dist
 
       - name: Check the assets
         env:
