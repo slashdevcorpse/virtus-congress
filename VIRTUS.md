@@ -46,8 +46,9 @@ both versions:
 
 ## Sync with upstream
 
-1. Fast-forward `main` to upstream `main`: `git fetch upstream && git push origin upstream/main:main`.
-2. Merge `main` into `virtus` (never rebase `virtus`). Solve the conflicts in the patch commits.
-3. Update "Base" in this file. If the upstream version changes, set the `setup.py` version to
+1. Add the upstream remote once: `git remote add upstream https://github.com/unitedstates/congress`.
+2. Fast-forward `main` to upstream `main`: `git fetch upstream && git push origin upstream/main:main`.
+3. Merge `upstream/main` into `virtus` (never rebase `virtus`). Solve the conflicts in the patch commits.
+4. Update "Base" in this file. If the upstream version changes, set the `setup.py` version to
    `<new upstream version>+virtus.1`.
-4. Do a release.
+5. Do a release.
