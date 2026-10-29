@@ -18,11 +18,19 @@ One line for each commit on `virtus` that is not in upstream:
 1. `Build the wheel without the congress-legislators checkout`: `setup.py` includes only the `congress` package, so a
    `congress-legislators` checkout in the tree does not go into the wheel or the sdist. `.gitmodules` is removed
    (the tree has no gitlink, and the `git://` URL does not work). The tasks that need the legislator data still
-   clone it at run time (`congress/tasks/utils.py`, `require_congress_legislators_repo`).
+   clone it at run time (`congress/tasks/utils.py`, `require_congress_legislators_repo`). This commit also added a
+   `pyproject.toml` with a build-backend pin; patch 5 removes it.
 2. `Release workflow: wheel, sdist and SHA256SUMS for v*+virtus.* tags`: `.github/workflows/virtus-release.yml`, and
-   the version `0.0.1+virtus.1` in `setup.py`. The workflow pins the build backend (`setuptools==84.2.1`) with a
-   build constraint. The repo has no `pyproject.toml`, so `pip install .` works on the Pythons upstream supports.
-3. `VIRTUS.md`: this file.
+   the version `0.0.1+virtus.1` in `setup.py`.
+3. `VIRTUS.md: upstream, patches, release and sync steps`: this file.
+4. `Release workflow: fail the asset check when an archive can't be listed`: the check lists each archive before
+   `grep` reads it, so a failed listing stops the step.
+5. `Pin setuptools in the release workflow, not in pyproject.toml`: the release build pins the build backend
+   (`setuptools==84.2.1`) with a build constraint. The repo has no `pyproject.toml`, so `pip install .` works on the
+   Pythons upstream supports.
+6. `VIRTUS.md: merge upstream/main in the sync steps`: the sync steps merge `upstream/main`, not a local `main`
+   that can be old.
+7. `VIRTUS.md: list every patch commit`: this list names each commit.
 
 ## Python 3.13
 
