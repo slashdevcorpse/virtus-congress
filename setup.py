@@ -16,7 +16,7 @@ setuptools.setup(
     description='Public domain data collectors for the work of Congress, '
     'including legislation, amendments, and votes.',
     license='CC0-1.0',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(include=['congress', 'congress.*']),
     install_requires=[
         'beautifulsoup4',
         'cssselect',
