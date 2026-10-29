@@ -39,12 +39,15 @@ jobs:
           sdist="dist/united_states_congress-${version}.tar.gz"
           test -f "$wheel" || { echo "no wheel for version ${version}"; ls dist; exit 1; }
           test -f "$sdist" || { echo "no sdist for version ${version}"; ls dist; exit 1; }
+          # List each archive first, so a failed listing stops the step under bash -e.
+          wheel_files="$(unzip -Z1 "$wheel")"
+          sdist_files="$(tar -tzf "$sdist")"
           # The wheel holds the congress package only, never congress-legislators.
-          if unzip -Z1 "$wheel" | grep -Ev '^(congress/|united_states_congress-[^/]+\.(dist-info|data)/)'; then
+          if grep -Ev '^(congress/|united_states_congress-[^/]+\.(dist-info|data)/)' <<< "$wheel_files"; then
             echo "the wheel holds files outside the congress package"
             exit 1
           fi
-          if tar -tzf "$sdist" | grep -F 'congress-legislators'; then
+          if grep -F 'congress-legislators' <<< "$sdist_files"; then
             echo "the sdist holds congress-legislators"
             exit 1
           fi
