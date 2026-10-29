@@ -1,0 +1,67 @@
+# Release of the virtus fork (VIRTUS.md). A tag v<upstream version>+virtus.<n>
+# on the virtus branch builds the wheel and the sdist with uv and publishes them
+# with one SHA256SUMS as the assets of the GitHub release of the tag.
+name: virtus-release
+
+on:
+  push:
+    tags:
+      - 'v*\+virtus.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: jog-16vcpu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.13.1'
+          enable-cache: false
+
+      - name: Build
+        run: |
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export SOURCE_DATE_EPOCH
+          # Pin the build backend here, not in pyproject.toml, so source installs on older Pythons still work.
+          echo 'setuptools==84.2.1' > "$RUNNER_TEMP/build-constraints.txt"
+          uv build --python 3.13.15 --build-constraint "$RUNNER_TEMP/build-constraints.txt" --out-dir dist
+
+      - name: Check the assets
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          wheel="dist/united_states_congress-${version}-py3-none-any.whl"
+          sdist="dist/united_states_congress-${version}.tar.gz"
+          test -f "$wheel" || { echo "no wheel for version ${version}"; ls dist; exit 1; }
+          test -f "$sdist" || { echo "no sdist for version ${version}"; ls dist; exit 1; }
+          # List each archive first, so a failed listing stops the step under bash -e.
+          wheel_files="$(unzip -Z1 "$wheel")"
+          sdist_files="$(tar -tzf "$sdist")"
+          # The wheel holds the congress package only, never congress-legislators.
+          if grep -Ev '^(congress/|united_states_congress-[^/]+\.(dist-info|data)/)' <<< "$wheel_files"; then
+            echo "the wheel holds files outside the congress package"
+            exit 1
+          fi
+          if grep -F 'congress-legislators' <<< "$sdist_files"; then
+            echo "the sdist holds congress-legislators"
+            exit 1
+          fi
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd dist
+          sha256sum -- *.whl *.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "$TAG" --notes "Built from ${GITHUB_SHA}. See VIRTUS.md." \
+            -- *.whl *.tar.gz SHA256SUMS
